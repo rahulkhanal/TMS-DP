@@ -7,11 +7,12 @@ import { GlobalExceptionFilter } from './middlewares/errors/global.exception';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api/v1');
 
   // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Task management system')
-    .setDescription('API Documentation for Healthcamp')
+    .setDescription('API Documentation for TMS')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -23,7 +24,8 @@ async function bootstrap() {
         in: 'header',
       },
       'access-token',
-    ).build();
+    )
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

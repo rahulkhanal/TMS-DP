@@ -1,26 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DepartmentEntity } from 'src/model/sql/department.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DepartmentService {
-  create(createDepartmentDto: CreateDepartmentDto) {
-    return 'This action adds a new department';
+  constructor(
+    @InjectRepository(DepartmentEntity)
+    private departmentRepository: Repository<DepartmentEntity>,
+  ) { }
+  async create(createDepartmentDto: CreateDepartmentDto): Promise<DepartmentEntity> {
+    return await this.departmentRepository.save(createDepartmentDto)
   }
 
-  findAll() {
-    return `This action returns all department`;
+  findAll(): Promise<DepartmentEntity[]> {
+    return this.departmentRepository.find()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} department`;
+  findOne(id: string): Promise<DepartmentEntity> {
+    return this.departmentRepository.findOne({ where: { id } })
   }
 
-  update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    return `This action updates a #${id} department`;
+  async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<DepartmentEntity> {
+    const existingDta = await this.departmentRepository.findOne({ where: { id } })
+    Object.keys(updateDepartmentDto).forEach((key) => {
+      if (updateDepartmentDto[key] !== undefined) {
+        existingDta[key] = updateDepartmentDto[key];
+      }
+    });
+    return await this.departmentRepository.save(existingDta);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} department`;
+  async remove(id): Promise<boolean> {
+    const resp = await this.departmentRepository.delete({ id })
+    return resp.affected ? true : false
   }
 }
